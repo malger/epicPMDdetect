@@ -1,0 +1,34 @@
+createGRangesObjectPMDSegmentation <-
+function(m, y.list, num.cores, seqLengths){
+
+  message("creating GRanges object")
+# use only chromosomes for which segmentation information is available (number of CpGs >= nCGbin)
+  chrs=names(y.list)
+
+  segList <- mclapply(chrs, function(chr.sel) {
+
+    indx=as.character(seqnames(m))==chr.sel
+    n <- sum(indx)
+    mids <- round(0.5*(start(m[indx])[-length(m[indx])] + start(m[indx])[-1]))
+    segCG <- Rle(y.list[[chr.sel]]$s)
+    artifical.ylist.ext = c(y.list[[chr.sel]]$s,
+                            rep(tail(y.list[[chr.sel]]$s,1),length(m[indx])-length(y.list[[chr.sel]]$s))
+    )
+    
+    segNt <- Rle(lengths=c(diff(c(1,mids)),seqLengths[chr.sel]-mids[n-1]+1), values=artifical.ylist.ext)
+    segChr <- GRanges(seqnames=chr.sel, 
+                      IRanges(start=c(1,cumsum(runLength(segNt))[-nrun(segNt)]+1), 
+                              end=cumsum(runLength(segNt))), 
+                      strand="*", 
+                      type=c("notPMD","PMD","Potential_PMD")[runValue(segNt)], 
+                      nCG=runLength(segCG), 
+                      seqlengths=seqLengths
+              )
+    segChr
+
+  }, mc.cores=num.cores);
+
+  segments <- do.call(c, unname(segList))
+  segments
+
+}

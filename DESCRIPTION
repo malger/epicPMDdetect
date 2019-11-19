@@ -1,0 +1,29 @@
+Package: msrEPIC
+Type: Package
+Title:Segmentation of EPIC data
+Version: 0.5.0
+Author: Lukas Burger, Dimos Gaidatzis, Dirk Schubeler and Michael
+        Stadler, Malte Groß
+Maintainer: Malte Groß <malte.gross@web.de>
+Description: This is a package for the discovery of regulatory regions
+        from EPIC data using a modified MethylseekR
+Depends: rtracklayer (>= 1.16.3),
+         parallel (>= 2.15.1),
+         mhsmm (>= 0.4.4),
+         RnBeads (>= 2.2.0)
+Imports: IRanges (>= 1.16.3),
+         BSgenome (>= 1.26.1),
+         GenomicRanges (>= 1.10.5),
+         geneplotter (>= 1.34.0),
+         graphics (>= 2.15.2),
+         grDevices (>= 2.15.2),
+         parallel (>= 2.15.2),
+         stats (>= 2.15.2),
+         utils (>= 2.15.2),
+         zoo (>= 1.8-6),
+         matrixcalc (>= 1.0.3)
+License: GPL (>=2)
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: no
+
