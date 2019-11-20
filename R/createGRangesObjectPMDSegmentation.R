@@ -20,7 +20,7 @@ function(m, y.list, num.cores, seqLengths){
                       IRanges(start=c(1,cumsum(runLength(segNt))[-nrun(segNt)]+1), 
                               end=cumsum(runLength(segNt))), 
                       strand="*", 
-                      type=c("notPMD","PMD","Potential_PMD")[runValue(segNt)], 
+                      type=c("notPMD","PMD","Potential_PMD","unsure")[runValue(segNt)], 
                       nCG=runLength(segCG), 
                       seqlengths=seqLengths
               )

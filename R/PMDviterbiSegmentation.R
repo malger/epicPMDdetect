@@ -1,7 +1,7 @@
 PMDviterbiSegmentation <-
 function(m, hmm.model, num.cores,method,bins,k,q){
 
-  
+  low_density_cutoff = 0.2
   message("performing viterbi segmentation")
 
 
@@ -9,8 +9,8 @@ function(m, hmm.model, num.cores,method,bins,k,q){
   y.list=mclapply('chr2', function(chr.sel,mc.cores=num.cores){
   
     chrindx=as.character(GenomicRanges::seqnames(m))==chr.sel;
-    T <- as.numeric(values(m[chrindx])[, 1])
-    M <- as.numeric(values(m[chrindx])[, 2])
+    Total <- as.numeric(values(m[chrindx])[, 1])
+    Meth <- as.numeric(values(m[chrindx])[, 2])
     
     dist = start(m[chrindx][-1])-end(m[chrindx][-length(m[chrindx])])
     
@@ -18,9 +18,9 @@ function(m, hmm.model, num.cores,method,bins,k,q){
     if(method == 'knn')
       offsets = getKNNOffsets(GenomicRanges::start(m[chrindx]),k,q)
     if (method == 'tiles')
-      offsets = getBinSizeOffsets(bins[[chr.sel]],quantile = 1)
+      offsets = getBinSizeOffsets(bins[[chr.sel]],q)
     
-    score <- calculateAlphaDistr(M, T, num.cores,offsets)
+    score <- calculateAlphaDistr(Meth, Total, num.cores,offsets)
     train=list(x=score, N=length(score));
     y=predict(hmm.model, train);
 
@@ -36,10 +36,21 @@ function(m, hmm.model, num.cores,method,bins,k,q){
     })
     df <- data.frame(matrix(unlist(pmdProp), nrow=length(pmdProp), byrow=T))
     colnames(df) = names(pmdProp[[1]])
-    lq = quantile(df$density,probs=.1)
-    runValue(ttt)[pmdsIndx][df$density<lq]=3 #low point coverage
+    lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
+    runValue(ttt)[pmdsIndx][df$density<lq]=3 #low PMD point coverage
     
-    NpmdsIndx = runVal
+    NpmdsIndx = runValue(ttt) == 1
+    NpmdsStart = cumsum(runLength(ttt))[NpmdsIndx]
+    NpmdProp= lapply(1:length(NpmdsStart),function(i){
+      range = na.omit(dist[NpmdsStart[i]:(NpmdsStart[i]+runLength(ttt)[NpmdsIndx][i])])
+      c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
+    })
+    df <- data.frame(matrix(unlist(NpmdProp), nrow=length(NpmdProp), byrow=T))
+    print(head(df))
+    colnames(df) = names(NpmdProp[[1]])
+    lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
+    runValue(ttt)[NpmdsIndx][df$density<lq]=4 #low nPMD point coverage
+    
     # # first take regions that are PMD, but too short and make them nonPMD
     # min.length = round(quantile(runLength(ttt)[runValue(ttt==2)]))[3]
     # indx=runLength(ttt)<min.length & runValue(ttt)==2 #any PMD that is shorter 2

@@ -16,7 +16,9 @@ readEPICidats = function(sample.sheet,idat.dir,sample.col.name,preprocess=T){
 readEPIC_RnbSet = function(path,sample.col.name,preprocess=T){
   rnb.options(identifiers.column = sample.col.name)
   print("import data...")
-  load.rnb.set(path)
+  d = load.rnb.set(path)
+  print(paste("found following samples: ",samples(d)))
+  d
 }
 
 
