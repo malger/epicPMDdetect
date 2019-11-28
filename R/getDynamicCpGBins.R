@@ -1,8 +1,7 @@
 
 
-getDynamicCpGBins =function(cpgs.gr,tilewidth = 250000){
-  txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-  bins <- GenomicRanges::tileGenome(GenomeInfoDb::seqlengths(txdb),
+getDynamicCpGBins =function(cpgs.gr,chrom.lengths,tilewidth = 250000){
+  bins <- GenomicRanges::tileGenome(chrom.lengths,
                                     tilewidth=tilewidth,
                                     cut.last.tile.in.chrom=TRUE
   )

@@ -1,5 +1,5 @@
 trainPMDHMM <-
-function(m, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,method='knn',bins,k,q){
+function(m, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,method='knn',bins,k,q,cutoff = NULL){
 
   message("training PMD-HMM on chromosome ", chr.sel)
 
@@ -9,9 +9,9 @@ function(m, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,method='knn',bins,k
   # 
   offsets = 101
   if(method == 'knn')
-    offsets = getKNNOffsets(GenomicRanges::start(m[indx]),k,q)
+    offsets = getKNNOffsets(GenomicRanges::start(m[indx]),k,q,cutoff)
   if (method == 'tiles')
-    offsets = getBinSizeOffsets(bins[[chr.sel]],quantile = 1)
+    offsets = getBinSizeOffsets(bins[[chr.sel]],q = 1)
   
   T <- as.numeric(values(m[indx])[, 1])
   M <- as.numeric(values(m[indx])[, 2])

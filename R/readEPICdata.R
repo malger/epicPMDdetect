@@ -30,13 +30,11 @@ saveRnBeadsObject = function(rnb.obj,path,archive = F){
 
 
 
-buildMethGranges = function(rnb.obj,seqlengths,samples=NULL){
+buildMethGranges = function(rnb.obj,samples=NULL){
 
   print("retrieving annotation...")
   gr = GRanges(annotation(rnb.obj,add.names = T))
   #filter existing chromosomes
-  seqlengths = seqlengths[names(seqlengths) %in% levels(seqnames(gr))]
-  seqlengths(gr) = seqlengths[order(match(names(seqlengths),names(seqlengths(gr))))]
 
   print("getting T,M Matrices...")
   unmethylated = U(rnb.obj,row.names = T)
