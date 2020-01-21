@@ -1,5 +1,5 @@
 PMDviterbiSegmentation <-
-function(m, hmm.model, num.cores,method,bins,k,q,cutoff = NULL){
+function(m, hmm.model, num.cores,method,bins,k,q,cutoff = NULL,markLowDensityPoints=T){
 
   low_density_cutoff = 0.2
   message("performing viterbi segmentation")
@@ -26,33 +26,36 @@ function(m, hmm.model, num.cores,method,bins,k,q,cutoff = NULL){
     #remove regions that are too short
     ttt=Rle(y$s)
     
-    if(length(runValue(ttt))>1){
-      # first mark PMDs, that are based on low density points
-      pmdsIndx= runValue(ttt)==2 #any PMD 
-      pmdsStart = cumsum(runLength(ttt))[pmdsIndx]
-      pmdProp= lapply(1:length(pmdsStart),function(i){
-        range = na.omit(dist[pmdsStart[i]:(pmdsStart[i]+runLength(ttt)[pmdsIndx][i])])
-        c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
-      })
-      df <- data.frame(matrix(unlist(pmdProp), nrow=length(pmdProp), byrow=T))
-      colnames(df) = names(pmdProp[[1]])
-      lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
-      runValue(ttt)[pmdsIndx][df$density<lq]=3 #low PMD point coverage
-      
-      NpmdsIndx = runValue(ttt) == 1
-      NpmdsStart = cumsum(runLength(ttt))[NpmdsIndx]
-      NpmdProp= lapply(1:length(NpmdsStart),function(i){
-        range = na.omit(dist[NpmdsStart[i]:(NpmdsStart[i]+runLength(ttt)[NpmdsIndx][i])])
-        c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
-      })
-      df <- data.frame(matrix(unlist(NpmdProp), nrow=length(NpmdProp), byrow=T))
-      print(head(df))
-      colnames(df) = names(NpmdProp[[1]])
-      lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
-      runValue(ttt)[NpmdsIndx][df$density<lq]=4 #low nPMD point coverage
+    if(markLowDensityPoints == T){
+      if(length(runValue(ttt))>1){
+        # first mark PMDs, that are based on low density points
+        pmdsIndx= runValue(ttt)==2 #any PMD 
+        pmdsStart = cumsum(runLength(ttt))[pmdsIndx]
+        pmdProp= lapply(1:length(pmdsStart),function(i){
+          range = na.omit(dist[pmdsStart[i]:(pmdsStart[i]+runLength(ttt)[pmdsIndx][i])])
+          c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
+        })
+        df <- data.frame(matrix(unlist(pmdProp), nrow=length(pmdProp), byrow=T))
+        colnames(df) = names(pmdProp[[1]])
+        lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
+        runValue(ttt)[pmdsIndx][df$density<lq]=3 #low PMD point coverage
+        
+        NpmdsIndx = runValue(ttt) == 1
+        NpmdsStart = cumsum(runLength(ttt))[NpmdsIndx]
+        NpmdProp= lapply(1:length(NpmdsStart),function(i){
+          range = na.omit(dist[NpmdsStart[i]:(NpmdsStart[i]+runLength(ttt)[NpmdsIndx][i])])
+          c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
+        })
+        df <- data.frame(matrix(unlist(NpmdProp), nrow=length(NpmdProp), byrow=T))
+        print(head(df))
+        colnames(df) = names(NpmdProp[[1]])
+        lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
+        runValue(ttt)[NpmdsIndx][df$density<lq]=4 #low nPMD point coverage
+        
+      }
       
     }
-      
+
     
       
     # # first take regions that are PMD, but too short and make them nonPMD
