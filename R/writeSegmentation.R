@@ -3,19 +3,21 @@ writeSegmentation =function(granges,seg.file.name){
   green = c(92,229,85)
   orange = c(255, 165, 0)
   purple = c(153,50,204)
+  bluegrey =c(119,136,153)
 
-  cchose = Vectorize(function(x) switch (x,
+  cchose = Vectorize(function(x) switch (as.character(x),
                                         "notPMD" = paste0(green,collapse=","),
                                         "PMD" = paste0(red,collapse=","),
                                         "Potential_PMD" = paste0(orange,collapse=","),
                                         "unsure" =  paste0(purple,collapse=","),
+                                        "unkown" = paste(bluegrey,collapse = ",")
                                 ))
   
   seg <- data.frame(seqnames=seqnames(granges),
                     starts=start(granges),
                     ends=end(granges),
                     compartment=(elementMetadata(granges)$type),
-                    nCG = (elementMetadata(granges)$nCG),
+                    nCG = rep(0),
                     strands=strand(granges),
                     rstarts=start(granges),
                     rends=end(granges),
