@@ -1,4 +1,4 @@
-export("PMDviterbiSegmentation","readEPICidats","readEPIC_RnbSet","saveRnBeadsObject","buildMethGranges","readMethylome", "readSNPTable", "removeSNPs", "plotAlphaDistributionOneChr", "dynSegmentPMDs", "plotPMDSegmentation", "savePMDSegments","trainPMDHMM","HMMprediction")
+export("PMDviterbiSegmentation","readEPICidats","readEPIC_RnbSet","saveRnBeadsObject","buildMethGranges","readMethylome", "readSNPTable", "removeSNPs", "plotAlphaDistributionOneChr", "dynSegmentPMDs", "plotPMDSegmentation", "savePMDSegments","trainPMDHMM")
 import(IRanges, BSgenome)
 importFrom(GenomicRanges, GRanges)
 importFrom(graphics, abline, axis, barplot, box, hist, legend, lines, par, plot, points, rect, smoothScatter, text)
