@@ -1,60 +1,70 @@
 PMDviterbiSegmentation <-
-function(m, hmm.model, num.cores,method,bins,k,q,cutoff = NULL,markLowDensityPoints=T){
+function(alphas, hmm.model, num.cores,k,q,cutoff = NULL,markLowDensitySegm){
 
-  low_density_cutoff = 0.2
   message("performing viterbi segmentation")
 
 
-  y.list=mclapply(unique(seqnames(m)), function(chr.sel,mc.cores=num.cores){
+  y.list=mclapply(names(alphas),FUN = function(chr.sel){
   
-    chrindx=as.character(GenomicRanges::seqnames(m))==chr.sel;
-    Total <- as.numeric(values(m[chrindx])[, 1])
-    Meth <- as.numeric(values(m[chrindx])[, 2])
-    
-    dist = start(m[chrindx][-1])-end(m[chrindx][-length(m[chrindx])])
-    
-    offsets = 101
-    if(method == 'knn')
-      offsets = getKNNOffsets(GenomicRanges::start(m[chrindx]),k,q,cutoff)
-    if (method == 'tiles')
-      offsets = getBinSizeOffsets(bins[[chr.sel]],q)
-    
-    score <- calculateAlphaDistr(Meth, Total, num.cores,offsets)
+    message('predicting chromosome ',chr.sel)
+    score = alphas[[chr.sel]]
     train=list(x=score, N=length(score));
     y=predict(hmm.model, train);
-
-    #remove regions that are too short
-    ttt=Rle(y$s)
     
-    if(markLowDensityPoints == T){
-      if(length(runValue(ttt))>1){
-        # first mark PMDs, that are based on low density points
-        pmdsIndx= runValue(ttt)==2 #any PMD 
-        pmdsStart = cumsum(runLength(ttt))[pmdsIndx]
-        pmdProp= lapply(1:length(pmdsStart),function(i){
-          range = na.omit(dist[pmdsStart[i]:(pmdsStart[i]+runLength(ttt)[pmdsIndx][i])])
-          c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
-        })
-        df <- data.frame(matrix(unlist(pmdProp), nrow=length(pmdProp), byrow=T))
-        colnames(df) = names(pmdProp[[1]])
-        lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
-        runValue(ttt)[pmdsIndx][df$density<lq]=3 #low PMD point coverage
-        
-        NpmdsIndx = runValue(ttt) == 1
-        NpmdsStart = cumsum(runLength(ttt))[NpmdsIndx]
-        NpmdProp= lapply(1:length(NpmdsStart),function(i){
-          range = na.omit(dist[NpmdsStart[i]:(NpmdsStart[i]+runLength(ttt)[NpmdsIndx][i])])
-          c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
-        })
-        df <- data.frame(matrix(unlist(NpmdProp), nrow=length(NpmdProp), byrow=T))
-        print(head(df))
-        colnames(df) = names(NpmdProp[[1]])
-        lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
-        runValue(ttt)[NpmdsIndx][df$density<lq]=4 #low nPMD point coverage
-        
-      }
+    ttta = rle(y$s)
+
+    if(markLowDensitySegm == T){
       
+      outls = which(getHighVariableDistNNs(GenomicRanges::start(m[chrindx]),k,q,cutoff))
+      tt = with(ttta, data.frame(number = values,
+                                     start = cumsum(lengths) - lengths + 1,
+                                     end = cumsum(lengths))[order(values),])
+      
+      if(length(outls)>0){
+        i = outls[1]
+        while(i<=length(y$s)){
+          j = which(i>=tt$start & i<=tt$end)
+          print(j)
+          
+          ttta$values[j] = ifelse( ttta$values[j] == 2,3,4)
+          blockend = tt[j,"end"]
+          i = outls[min(which(outls>blockend))]
+          print(i)
+          if(isNA(i)){
+            break;
+          }
+        }
+      }
     }
+      
+      # if(length(runValue(ttt))>1){
+      #   # first mark PMDs, that are based on low density points
+      #   pmdsIndx= runValue(ttt)==2 #any PMD 
+      #   pmdsStart = cumsum(runLength(ttt))[pmdsIndx]
+      #   pmdProp= lapply(1:length(pmdsStart),function(i){
+      #     range = na.omit(dist[pmdsStart[i]:(pmdsStart[i]+runLength(ttt)[pmdsIndx][i])])
+      #     c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
+      #   })
+      #   df <- data.frame(matrix(unlist(pmdProp), nrow=length(pmdProp), byrow=T))
+      #   colnames(df) = names(pmdProp[[1]])
+      #   lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
+      #   runValue(ttt)[pmdsIndx][df$density<lq]=3 #low PMD point coverage
+      #   
+      #   NpmdsIndx = runValue(ttt) == 1
+      #   NpmdsStart = cumsum(runLength(ttt))[NpmdsIndx]
+      #   NpmdProp= lapply(1:length(NpmdsStart),function(i){
+      #     range = na.omit(dist[NpmdsStart[i]:(NpmdsStart[i]+runLength(ttt)[NpmdsIndx][i])])
+      #     c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
+      #   })
+      #   df <- data.frame(matrix(unlist(NpmdProp), nrow=length(NpmdProp), byrow=T))
+      #   print(head(df))
+      #   colnames(df) = names(NpmdProp[[1]])
+      #   lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
+      #   runValue(ttt)[NpmdsIndx][df$density<lq]=4 #low nPMD point coverage
+      #   
+      # }
+      # 
+   
 
     
       
@@ -102,7 +112,7 @@ function(m, hmm.model, num.cores,method,bins,k,q,cutoff = NULL,markLowDensityPoi
     # })
     # runValue(ttt)[indx2][remL]=2;
     
-    y$s=as.vector(ttt);
+    y$s=inverse.rle(ttta)
     y$score=score
     print(paste0('finished chromosome:',chr.sel))
     

@@ -1,24 +1,9 @@
 trainPMDHMM <-
-function(m, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,method='knn',bins,k,q,cutoff = NULL){
+function(alphas, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,k,q,cutoff = NULL){
 
   message("training PMD-HMM on chromosome ", chr.sel)
 
-  indx <- as.character(GenomicRanges::seqnames(m))==chr.sel
-  # if(sum(indx)<(CpGbins[[chr.sel]]))
-  #   stop(sprintf("Error: less than %d covered CpGs on chromosome %s", sum(CpGbins[[chr.sel]]), chr.sel))
-  # 
-  offsets = 101
-  if(method == 'knn')
-    offsets = getKNNOffsets(GenomicRanges::start(m[indx]),k,q,cutoff)
-  if (method == 'tiles')
-    offsets = getBinSizeOffsets(bins[[chr.sel]],q = 1)
-  
-  T <- as.numeric(values(m[indx])[, 1])
-  M <- as.numeric(values(m[indx])[, 2])
-  
-  
-  score <- calculateAlphaDistr(M, T, num.cores,offsets)
-
+  score = alphas[[chr.sel]]
   
  # use parameters obtained from training on human IMR90 methylome as starting values
   J=2;

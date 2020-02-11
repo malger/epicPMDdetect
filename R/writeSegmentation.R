@@ -1,23 +1,30 @@
-writeSegmentation =function(granges,seg.file.name){
+writeSegmentation =function(granges,seg.file.name,score.col.name=NULL){
   red = c(255,95,95)
   green = c(92,229,85)
-  orange = c(255, 165, 0)
-  purple = c(153,50,204)
+  lightgreen = c(152,251,152)
+  lightred = c(240,128,128)
   bluegrey =c(119,136,153)
 
   cchose = Vectorize(function(x) switch (as.character(x),
                                         "notPMD" = paste0(green,collapse=","),
                                         "PMD" = paste0(red,collapse=","),
-                                        "Potential_PMD" = paste0(orange,collapse=","),
-                                        "unsure" =  paste0(purple,collapse=","),
+                                        "likelyPMD" = paste0(lightred,collapse=","),
+                                        "likelynotPMD" =  paste0(lightgreen,collapse=","),
                                         "unkown" = paste(bluegrey,collapse = ",")
                                 ))
   
+  if(is.null(score.col.name)){
+    score = rep(0)
+  }else{
+    score = elementMetadata(granges)[,score.col.name]
+    
+  }
+    
   seg <- data.frame(seqnames=seqnames(granges),
                     starts=start(granges),
                     ends=end(granges),
                     compartment=(elementMetadata(granges)$type),
-                    nCG = rep(0),
+                    score = score,
                     strands=strand(granges),
                     rstarts=start(granges),
                     rends=end(granges),

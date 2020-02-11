@@ -1,27 +1,37 @@
-dynSegmentPMDs <-
+segmentPMDsKNN <-
 function(m,
-         chr.sel,
+         chr.sel="chr2",
          pdfFilename = NULL,
          seqLengths = "hg19",
-         num.cores = 4,
          method = 'knn',
-         tilewidth = 2.5*10^5,
-         k=30,
+         knn=c(20,25,30),
          q=1,
-         cutoff = NULL
+         cutoff = 50000,
+         num.cores = 1,
+         markLowDensitySegm = T
         ){ 
 
-        bins = NULL
+        parallel.setup(num.cores)
         if(seqLengths == "hg19"){
-                library(TxDb.Hsapiens.UCSC.hg19.knownGene)
                 seqLengths = seqlengths(TxDb.Hsapiens.UCSC.hg19.knownGene)
         }
         seqLengths = filterPresentChromosomesNSort(seqLengths,m)
-        if(method == 'tiles'){
-          bins <- getDynamicCpGBins(m,seqLengths,tileWidth)
+        
+        offsets = calculateKNNs(m,knn,cutoff,q)
+        alphas = foreach(k = names(offsets)) %dopar%  alphaValueEstimation(m,offsets[[k]])
+        
+        names(alphas) = paste0('knn',knn)
+        
+        df = do.call(cbind,alphas)
+        comb_alpha = foreach(i = 1:nrow(df)) %dopar%{
+                apply(sapply(df[i,],cbind),1,mean) #TODO remove hack
         }
-        hmm.model <- trainPMDHMM(m, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,method,bins,k,q,cutoff)
-        y.list <- PMDviterbiSegmentation(m, hmm.model, num.cores,method,bins,k,q,cutoff)
+        #comb_alpha = lapply(comb_alpha,'/',length(knn))
+        names(comb_alpha) = names(alphas[[1]])
+        
+        
+        hmm.model <- trainPMDHMM(comb_alpha, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,k,q,cutoff)
+        y.list <- PMDviterbiSegmentation(comb_alpha, hmm.model, num.cores,k,q,cutoff,markLowDensitySegm)
         segments <- createGRangesObjectPMDSegmentation(m, y.list, num.cores, seqLengths)
         segments
          
@@ -30,6 +40,5 @@ function(m,
 
 filterPresentChromosomesNSort = function(seqlengths,gr){
         seqlengths = seqlengths[names(seqlengths) %in% levels(seqnames(gr))]
-        
         seqlengths[order(match(names(seqlengths),names(seqlengths(gr))))]
 }
