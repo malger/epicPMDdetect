@@ -1,3 +1,9 @@
+#' Write a PMD/nPMD Segmentation to a bed.gz file
+#' @param granges representing the segmentation
+#' @param file.name file path and name. Bed.gz will be concatenated
+#' @param score.col.name an optional column that contains scores for each segment 
+#' @description The grange object musst contain (T)otal,(M)ethylated Read counts in the metadata. 
+#' @export
 writeSegmentation =function(granges,seg.file.name,score.col.name=NULL){
   red = c(255,95,95)
   green = c(92,229,85)

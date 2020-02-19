@@ -1,0 +1,19 @@
+import(IRanges, BSgenome)
+import(foreach)
+import(doSNOW)
+import(RnBeads)
+import(BiocGenerics)
+
+importFrom(GenomicRanges, GRanges)
+importFrom(GenomeInfoDb, seqlengths)
+importFrom(TxDb.Hsapiens.UCSC.hg19.knownGene,TxDb.Hsapiens.UCSC.hg19.knownGene)
+importFrom(graphics, abline, axis, barplot, box, hist, legend, lines, par, plot, points, rect, smoothScatter, text)
+importFrom(grDevices, dev.off, grey.colors, pdf)
+importFrom(mhsmm, dnorm.hsmm, hmmfit, hmmspec, mstep.norm)
+importFrom(stats, dnorm)
+importFrom(utils, write.table)
+importFrom(zoo, rollapply)
+
+importFrom(matrixcalc, hadamard.prod)
+importFrom(FNN, get.knnx)
+

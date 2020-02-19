@@ -1,10 +1,17 @@
+#' Predicts PMDs/nPMD segments based on HiddenMarkovModel. Selection by ML using viterbi selection.
+#' @param alphas estimated alpha values for each datapoint. format:list(chr->vector(alphaValues))
+#' @param hmm.model trained Hidden Markov Model
+#' @param markHighDPdistVarSegms mark segments with high variance in pairwise dp distance
+#' @param knns list(k->list(chrs->FNN::get.knnx objs)), only needed if markHighDPdistVarSegms is TRUE
+#' @return prediction of PMD/nPMD segments for each chromosome
+#' @export
 PMDviterbiSegmentation <-
-function(alphas, hmm.model, num.cores,k,q,cutoff = NULL,markLowDensitySegm){
+function(alphas, hmm.model,markHighDPdistVarSegms=F,knns=NULL){
 
   message("performing viterbi segmentation")
 
 
-  y.list=mclapply(names(alphas),FUN = function(chr.sel){
+  y.list = foreach(chr.sel = names(alphas),.export = 'getHighVariableDistNNs') %dopar%{
   
     message('predicting chromosome ',chr.sel)
     score = alphas[[chr.sel]]
@@ -13,9 +20,9 @@ function(alphas, hmm.model, num.cores,k,q,cutoff = NULL,markLowDensitySegm){
     
     ttta = rle(y$s)
 
-    if(markLowDensitySegm == T){
+    if(markHighDPdistVarSegms == T){
       
-      outls = which(getHighVariableDistNNs(GenomicRanges::start(m[chrindx]),k,q,cutoff))
+      outls = which(getHighVariableDistNNs(knns[[chr.sel]]))
       tt = with(ttta, data.frame(number = values,
                                      start = cumsum(lengths) - lengths + 1,
                                      end = cumsum(lengths))[order(values),])
@@ -30,7 +37,7 @@ function(alphas, hmm.model, num.cores,k,q,cutoff = NULL,markLowDensitySegm){
           blockend = tt[j,"end"]
           i = outls[min(which(outls>blockend))]
           print(i)
-          if(isNA(i)){
+          if(is.na(i)){
             break;
           }
         }
@@ -118,8 +125,8 @@ function(alphas, hmm.model, num.cores,k,q,cutoff = NULL,markLowDensitySegm){
     
     return(y)
 
-  }, mc.cores=num.cores);
-  names(y.list) = unique(seqnames(m))
+  }
+  names(y.list) = names(alphas)
   y.list
 
 }

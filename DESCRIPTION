@@ -1,29 +1,39 @@
-Package: msrEPIC
+Package: epicPMDdetect
 Type: Package
-Title:Segmentation of EPIC data
-Version: 0.5.0
+Title: PMD detection on EPIC data
+Version: 0.2.0
 Author: Lukas Burger, Dimos Gaidatzis, Dirk Schubeler and Michael
         Stadler, Malte Groß
 Maintainer: Malte Groß <malte.gross@web.de>
-Description: This is a package for the discovery of regulatory regions
-        from EPIC data using a modified MethylseekR
+Description: 
+        This is a package for the discovery of Partially Methylated Domains from EPIC data. 
+        It is based on the MethylseekR approach with alpha value estimation and HMM prediction.
+        In contrast to WGBSdata, EPIC data is much more sparse and not uniformly distributed. 
+        Therefore fixed windows like in MSR are unfit for predicting alpha values, 
+        hence KNN is used to select the genomic neighrest neighbors. 
+        Here Alpha Values are determined for multiple values of K and are than combinded 
+        to smooth out alpha outliers.
+        Also distance cutoff constrains are inplace to ensure
+        that less biologically related DPs are pentalized.
 Depends: rtracklayer (>= 1.16.3),
          parallel (>= 2.15.1),
          mhsmm (>= 0.4.4),
-         RnBeads (>= 2.2.0)
+         RnBeads (>= 2.2.0),
+         doParallel(>= 1.0.15),
+         zoo (>= 1.8-6),
+         FNN (>= 1.1.3),
+         mmap(>= 0.6-19),
+         GenomicRanges (>= 1.10.5)
 Imports: IRanges (>= 1.16.3),
          BSgenome (>= 1.26.1),
-         GenomicRanges (>= 1.10.5),
          geneplotter (>= 1.34.0),
          graphics (>= 2.15.2),
          grDevices (>= 2.15.2),
-         parallel (>= 2.15.2),
          stats (>= 2.15.2),
          utils (>= 2.15.2),
-         zoo (>= 1.8-6),
          matrixcalc (>= 1.0.3)
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: no
-
+RoxygenNote: 6.1.1

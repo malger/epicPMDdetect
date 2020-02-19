@@ -1,11 +1,15 @@
+#' Generates a genome segmentation including PMDs,nonPMDs and their unsure counterparts.'
+#' @param m GRange representing the EPIC datapoints. Metadata musst include Total,Methylated Counts
+#' @param y.list prediction object of library(mhsmm).
+#' @param seqLengths Seqlenghts objects representing the assembly sequence lengths of the chromosomes.
+#' @return GRange genome segmentation with PMDs,nonPMDs and their unsure counterparts.
 createGRangesObjectPMDSegmentation <-
-function(m, y.list, num.cores, seqLengths){
+function(m, y.list, seqLengths){
 
   message("creating GRanges object")
-# use only chromosomes for which segmentation information is available (number of CpGs >= nCGbin)
   chrs=names(y.list)
 
-  segList <- mclapply(chrs, function(chr.sel) {
+  segList <- foreach(chr.sel = chrs,.packages=c('GenomicRanges','IRanges')) %dopar% {
 
     indx=as.character(seqnames(m))==chr.sel
     n <- sum(indx)
@@ -26,7 +30,7 @@ function(m, y.list, num.cores, seqLengths){
               )
     segChr
 
-  }, mc.cores=num.cores);
+  }
 
   segments <- do.call(c, unname(segList))
   segments

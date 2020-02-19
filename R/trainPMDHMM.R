@@ -1,5 +1,14 @@
+#' Trains and fits the Hidden Markov Model used for PMD assignment.
+#'
+#' @param alphas estimated alpha values. List of chromosomes->alphaValues
+#' @param chr.sel the chromosome used for HMM training
+#' @param plot.distr should the the postirior distributions for the HMM-states be plotted
+#' @param pdfFilename save the former plot to pdf, default FALSE
+#' @description Trains and fits the Hidden Markov Model used for PMD assignment. Method adapted from MethylseekR.
+#' @export
+#' @return fitted Hidden Markov Model
 trainPMDHMM <-
-function(alphas, chr.sel, num.cores, plot.distr=TRUE, pdfFilename,k,q,cutoff = NULL){
+function(alphas, chr.sel, plot.distr=TRUE, pdfFilename){
 
   message("training PMD-HMM on chromosome ", chr.sel)
 
