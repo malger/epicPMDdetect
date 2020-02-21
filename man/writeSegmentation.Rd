@@ -14,5 +14,5 @@ writeSegmentation(granges, seg.file.name, score.col.name = NULL)
 \item{file.name}{file path and name. Bed.gz will be concatenated}
 }
 \description{
-The grange object musst contain (T)otal,(M)ethylated Read counts in the metadata.
+Write a PMD/nPMD Segmentation to a bed.gz file
 }

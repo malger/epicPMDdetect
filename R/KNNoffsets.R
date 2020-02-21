@@ -6,10 +6,14 @@
 #' @export
 calculateKNNsOffsets = function(knns.list,cutoff=NULL,q=1){
   
+  if(is.null(cutoff)) {
+    cutoff = rep(list(NULL),length(knns.list))
+  }
+  
   chrs = names(knns.list[[1]])
-  offsets = foreach(knns = knns.list,.export='getKNNOffsets',.noexport="m") %:% 
+  offsets = foreach(knns = knns.list,co = cutoff,.export='getKNNOffsets',.noexport="m") %:% 
     foreach(knns.chr = knns,.final = function(x) setNames(x, chrs)) %dopar% {
-      getKNNOffsets(knns.chr,cutoff[1],q)
+      getKNNOffsets(knns.chr,co,q)
     }
   
   names(offsets) = names(knns.list)

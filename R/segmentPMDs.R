@@ -29,6 +29,12 @@ function(m,
          markLowDensitySegm = T
         ){ 
 
+        if(is.null(knn) | !is.numeric(knn))
+          stop('you nead to provide at least one numeric value for knn')
+        
+        if(length(knn)!=length(cutoff) & !is.null(cutoff))
+          stop('you need to provide a cutoff value for each k. Or use null for no cutoff')
+  
         message('Segmenting with these parameters\n\n',
                 ' - KNN\t\t\t',paste(knn,collapse = ','),'\n',
                 ' - cutoffs:\t\t',paste(cutoff,collapse = ','),'\n',

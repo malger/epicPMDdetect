@@ -5,6 +5,7 @@
 #' @param preprocess whenever rnbeads default preprocessing pipeline should be run. PP results are saved in pp_report/ relatived to workin dir
 #' @return rnbeadsSet object
 #' @export
+#' @import RnBeads
 readEPIC_idats = function(sample.sheet,idat.dir,sample.col.name,preprocess=T){
 
   rnb.options(identifiers.column = sample.col.name)
@@ -25,6 +26,7 @@ readEPIC_idats = function(sample.sheet,idat.dir,sample.col.name,preprocess=T){
 #' @param preprocess whenever rnbeads default preprocessing pipeline should be run. PP results are saved in pp_report/ relatived to workin dir
 #' @return rnbeadsSet object
 #' @export
+#' @import RnBeads
 readEPIC_RnbSet = function(path,sample.col.name,preprocess=T){
   rnb.options(identifiers.column = sample.col.name)
   print("import data...")
@@ -57,6 +59,7 @@ readEPIC_RDSgranges = function(rdsfile){
 #' @param samples the sample that will be used to create tbe Meth. Grange. If a vector is supplied the mean Meth over all specified samples is taken.
 #' @return grange Object with Methylation and Total counts
 #' @export
+#' @import RnBeads
 buildMethGrangesFromRnbSet = function(rnb.obj,samples=NULL){
 
   print("retrieving annotation...")
