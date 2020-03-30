@@ -31,7 +31,7 @@ calculateKNNs = function(m,ks){
   chrs = unique(chrvec)
   positions = start(m)
   
-  nns = foreach(k = ks,.packages=c('GenomicRanges','FNN','mmap'),.export = 'as.boolean',.noexport = 'm') %:% 
+  nns = foreach(k = ks,.packages=c('GenomicRanges','FNN'),.export = 'as.boolean',.noexport = 'm') %:% 
     foreach(chr.sel = chrs,.final = function(x) setNames(x, chrs)) %dopar% {
       chrindx = as.boolean(chrvec==chr.sel)
       get.knnx(positions[chrindx],positions[chrindx],k,algorithm = 'kd_tree')
