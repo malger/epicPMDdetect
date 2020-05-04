@@ -26,7 +26,7 @@ function(m,
          q=1,
          cutoff = c(50000,70000,90000),
          num.cores = 1,
-         markLowDensitySegm = T
+         markLowDensitySegm = F
         ){ 
 
         if(is.null(knn) | !is.numeric(knn))

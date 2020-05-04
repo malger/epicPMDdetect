@@ -41,7 +41,7 @@ calculateKNNs = function(m,ks){
   
 }
 
-getKNNOffsets = function(nn,cutoff =NULL,q=1){
+getKNNOffsets = function(nn,cutoff =NULL,q=1,minimalNNsize=4){
   offsets = apply(nn$nn.index,2,function(x) x-nn$nn.index[,1])
   out = split(offsets,1:nrow(offsets))
   if(!is.null(cutoff)){
@@ -51,17 +51,20 @@ getKNNOffsets = function(nn,cutoff =NULL,q=1){
     out = lapply(1:length(out),function(i)out[[i]][a[[i]]])
     
     
-    # #fix values that have under 5 datapoints
-    # useAdjNBs = function(x)unique(unlist(lapply(-2:2,function(i){
-    #   x = ifelse(x<3,x+3,x)
+    #fix values that have under 5 datapoints
+    # useAdjNBs = function(x)unique(unlist(lapply(-1:1,function(i){
+    #   x = if(x<2){
+    #     return(sapply(out[[2]],"+",1))
+    #   }
     #   x = ifelse(x>length(out)-3,x-3,x)
     #   sapply(out[[(x+i)]],"+",i)
     # })))
-    # ids = which(sapply(out,length)<5)
+    # ids = which(sapply(out,length)<minimalNNsize)
+    # print(paste0("indicies with to few neighbors:",paste0(ids,collapse = ",")))
     # for(i in ids){
-    #   out[[i]] = useAdjNBs(i)
+    #   out[[i]] = (c(0))
     # }
-    
+
     return(out)
   }
   

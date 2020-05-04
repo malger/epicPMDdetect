@@ -6,17 +6,22 @@ default.options = list(
   q=1,
   cutoff = c(50000,70000,90000),
   num.cores = 1,
-  markLowDensitySegm = T
+  markLowDensitySegm = F
 )
 
 #' Segments all samples of an Rnbeads Object
 #' @param rnbobj the rnbeads object with the methylation data
 #' @param outputFolder the folder to which the segmentation files should be written to
+#' @param samples optional param: if provided only those samples are processed
 #' @param num.cores number of cores to use in parallel
 #' @param settings pass settings to segmentation Function. Not yet implemented
 #' @export
 #' @import RnBeads,utils
-segmentRnbSet = function(rnbobj,outputFolder,num.cores=1,settings = NULL){
+segmentRnbSet = function(rnbobj,outputFolder,samples=NULL,num.cores=1,settings = NULL){
+  if(is.null(samples))
+    samples = samples(rnbobj)
+  if (!all(samples %in% samples(data)))
+    stop("some samples specified were not found in the rnbset. Aborting!")
   for (i in 1:length(samples(rnbobj))) {
     s = samples(rnbobj)[i]
     message('processing sample: ',s)
