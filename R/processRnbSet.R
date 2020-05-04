@@ -20,7 +20,7 @@ default.options = list(
 segmentRnbSet = function(rnbobj,outputFolder,samples=NULL,num.cores=1,settings = NULL){
   if(is.null(samples))
     samples = samples(rnbobj)
-  if (!all(samples %in% samples(data)))
+  if (!all(samples %in% samples(rnbobj)))
     stop("some samples specified were not found in the rnbset. Aborting!")
   for (i in 1:length(samples(rnbobj))) {
     s = samples(rnbobj)[i]
