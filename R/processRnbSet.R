@@ -16,7 +16,8 @@ default.options = list(
 #' @param num.cores number of cores to use in parallel
 #' @param settings pass settings to segmentation Function. Not yet implemented
 #' @export
-#' @import RnBeads,utils
+#' @import RnBeads
+#' @import utils
 segmentRnbSet = function(rnbobj,outputFolder,samples=NULL,num.cores=1,settings = NULL){
   if(is.null(samples))
     samples = samples(rnbobj)

@@ -4,14 +4,14 @@
 \alias{createGRangesObjectPMDSegmentation}
 \title{Generates a genome segmentation including PMDs,nonPMDs and their unsure counterparts.'}
 \usage{
-createGRangesObjectPMDSegmentation(m, y.list, seqLengths)
+createGRangesObjectPMDSegmentation(m.list, y.list, seqLengths)
 }
 \arguments{
-\item{m}{GRange representing the EPIC datapoints. Metadata musst include Total,Methylated Counts}
-
 \item{y.list}{prediction object of library(mhsmm).}
 
 \item{seqLengths}{Seqlenghts objects representing the assembly sequence lengths of the chromosomes.}
+
+\item{m}{GRange representing the EPIC datapoints. Metadata musst include Total,Methylated Counts}
 }
 \value{
 GRange genome segmentation with PMDs,nonPMDs and their unsure counterparts.

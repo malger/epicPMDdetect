@@ -13,7 +13,6 @@ calculateKNNs(m, ks)
 }
 \value{
 list(knnValue->list(chrs->FNN knn-objects))
-consider reading FNN::get.knnx documentation
 }
 \description{
 Calculates the KNNs for each datapoint based on the genomic distance

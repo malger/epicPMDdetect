@@ -4,17 +4,13 @@
 #' @param score.col.name an optional column that contains scores for each segment 
 #' @export
 writeSegmentation =function(granges,seg.file.name,score.col.name=NULL){
-  red = c(255,95,95)
-  green = c(92,229,85)
-  lightgreen = c(152,251,152)
-  lightred = c(240,128,128)
+  red = c(239,141,137)
+  blue = c(147,188,246)
   bluegrey =c(119,136,153)
 
   cchose = Vectorize(function(x) switch (as.character(x),
-                                        "notPMD" = paste0(green,collapse=","),
+                                        "notPMD" = paste0(blue,collapse=","),
                                         "PMD" = paste0(red,collapse=","),
-                                        "likelyPMD" = paste0(lightred,collapse=","),
-                                        "likelynotPMD" =  paste0(lightgreen,collapse=","),
                                         "unkown" = paste(bluegrey,collapse = ",")
                                 ))
   

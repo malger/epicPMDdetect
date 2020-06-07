@@ -4,27 +4,32 @@
 #' @param seqLengths Seqlenghts objects representing the assembly sequence lengths of the chromosomes.
 #' @return GRange genome segmentation with PMDs,nonPMDs and their unsure counterparts.
 createGRangesObjectPMDSegmentation <-
-function(m, y.list, seqLengths){
+function(m.list, y.list, seqLengths){
 
   message("creating GRanges object")
-  chrs=names(y.list)
 
-  segList <- foreach(chr.sel = chrs,.packages=c('GenomicRanges','IRanges')) %dopar% {
+ 
+        
+  segList <- foreach(chr.sel = unique(seqnames(m)),
+                     m.chr= m.list,
+                     y = y.list,
+                     .noexport = c("m","y.list"),
+                     .export = c("seqLengths"),
+                     .packages=c('GenomicRanges','IRanges')) %dopar% {
 
-    indx=as.character(seqnames(m))==chr.sel
-    n <- sum(indx)
-    mids <- round(0.5*(start(m[indx])[-length(m[indx])] + start(m[indx])[-1]))
-    segCG <- Rle(y.list[[chr.sel]]$s)
-    artifical.ylist.ext = c(y.list[[chr.sel]]$s,
-                            rep(tail(y.list[[chr.sel]]$s,1),length(m[indx])-length(y.list[[chr.sel]]$s))
-    )
-    
-    segNt <- Rle(lengths=c(diff(c(1,mids)),seqLengths[chr.sel]-mids[n-1]+1), values=artifical.ylist.ext)
+    n = length(m.chr)
+    segCG = y$s
+                       
+    mids <- round(0.5*(start(m.chr)[-length(m.chr)] + start(m.chr)[-1])) #get mids between dps
+   
+    #copy dp assignment (PMD/notPMD/unkown) to Rle having the bp distance as runLength
+    segNt <- Rle(lengths=c(diff(c(1,mids)),seqLengths[chr.sel]-mids[n-1]+1), values=as.numeric(segCG)) 
+    #convert to Genomic Ranges
     segChr <- GRanges(seqnames=chr.sel, 
                       IRanges(start=c(1,cumsum(runLength(segNt))[-nrun(segNt)]+1), 
                               end=cumsum(runLength(segNt))), 
                       strand="*", 
-                      type=c("notPMD","PMD","likelyPMD","likelynotPMD")[runValue(segNt)], 
+                      type=c("notPMD","PMD","unkown")[runValue(segNt)], 
                       nCG=runLength(segCG), 
                       seqlengths=seqLengths
               )

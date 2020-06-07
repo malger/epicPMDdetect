@@ -22,11 +22,11 @@ function(m,
          training.chr.sel="chr2",
          pdfFilename = NULL,
          seqLengths = "hg19",
-         knn=c(20,35,55),
+         knn=c(30,50,90),
          q=1,
-         cutoff = c(50000,70000,90000),
-         num.cores = 1,
-         markLowDensitySegm = F
+         cutoff = c(50000,100000,150000),
+         num.cores = 2,
+         markLowDensitySegm = T
         ){ 
 
         if(is.null(knn) | !is.numeric(knn))
@@ -46,7 +46,7 @@ function(m,
                 )
        
   
-         message('generating cluster of size',num.cores)
+         message('generating cluster of size ',num.cores)
   
    
         cl <- makeCluster(num.cores)
@@ -76,11 +76,14 @@ function(m,
         names(comb_alpha) = names(alphas[[1]])
         message('clearing up memory')
         remove(alphas)
+        m.list = split(m,f = seqnames(m))[unique(seqnames(m))]
+        remove(m)
         gc(verbose = F)
         
         hmm.model <- trainPMDHMM(comb_alpha, training.chr.sel, plot.distr=TRUE, pdfFilename)
-        y.list <- PMDviterbiSegmentation(comb_alpha, hmm.model,T,knns.list[[1]])
-        segments <- createGRangesObjectPMDSegmentation(m, y.list, seqLengths)
+        y.list <- PMDviterbiSegmentation(comb_alpha, hmm.model,markLowDensitySegm,m.list)
+
+        segments <- createGRangesObjectPMDSegmentation(m.list, y.list, seqLengths)
         message('shutting down cluster')
         stopCluster(cl)
         

@@ -4,10 +4,17 @@
 \alias{segmentPMDsKNN}
 \title{Segments a genome into PMD and nonPMD regions using an HMM and KNNs}
 \usage{
-segmentPMDsKNN(m, training.chr.sel = "chr2", pdfFilename = NULL,
-  seqLengths = "hg19", knn = c(20, 35, 55), q = 1,
-  cutoff = c(50000, 70000, 90000), num.cores = 1,
-  markLowDensitySegm = T)
+segmentPMDsKNN(
+  m,
+  training.chr.sel = "chr2",
+  pdfFilename = NULL,
+  seqLengths = "hg19",
+  knn = c(30, 50, 90),
+  q = 1,
+  cutoff = c(50000, 1e+05, 150000),
+  num.cores = 2,
+  markLowDensitySegm = T
+)
 }
 \arguments{
 \item{m}{Granges including Metadata for Total,Methylated Counts}

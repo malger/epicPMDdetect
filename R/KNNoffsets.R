@@ -24,16 +24,16 @@ calculateKNNsOffsets = function(knns.list,cutoff=NULL,q=1){
 #' @param m GenomicRange containg EPIC datapoints with Methylation, Total Value Counts
 #' @param ks vector of values for K
 #' @return list(knnValue->list(chrs->FNN knn-objects))
-#' consider reading FNN::get.knnx documentation
+#' @export
 calculateKNNs = function(m,ks){
   
   chrvec = seqnames(m)
   chrs = unique(chrvec)
   positions = start(m)
   
-  nns = foreach(k = ks,.packages=c('GenomicRanges','FNN'),.export = 'as.boolean',.noexport = 'm') %:% 
+  nns = foreach(k = ks,.packages=c('GenomicRanges','FNN'),.noexport = 'm') %:% 
     foreach(chr.sel = chrs,.final = function(x) setNames(x, chrs)) %dopar% {
-      chrindx = as.boolean(chrvec==chr.sel)
+      chrindx = as.logical(chrvec==chr.sel)
       get.knnx(positions[chrindx],positions[chrindx],k,algorithm = 'kd_tree')
     }
   names(nns) = paste0('knn',ks)

@@ -6,122 +6,81 @@
 #' @return prediction of PMD/nPMD segments for each chromosome
 #' @export
 PMDviterbiSegmentation <-
-function(alphas, hmm.model,markHighDPdistVarSegms=F,knns=NULL){
+function(alphas, hmm.model,markLowDensitySegm=T,m.list){
 
   message("performing viterbi segmentation")
+  
+  #calc next neighbor distance
+  ndp_dist = start(m)[-1]-start(m)[-length(m)]
+  ndp_dist[ndp_dist<0] = NA # change of chromosome fix
+  m$nndist = c(ndp_dist,NA)
+  m$critical = rep(F)
+ 
+  
 
-
-  y.list = foreach(chr.sel = names(alphas),.export = 'getHighVariableDistNNs') %dopar%{
+  y.list = foreach(chr.sel = names(alphas),.export=c("Rle")) %dopar%{
   
     message('predicting chromosome ',chr.sel)
     score = alphas[[chr.sel]]
     train=list(x=score, N=length(score));
     y=predict(hmm.model, train);
     
-    ttta = rle(y$s)
+    segms = Rle(y$s)
 
-    if(markHighDPdistVarSegms == T){
+    if (length(segms)>1 && markLowDensitySegm){
       
-      outls = which(getHighVariableDistNNs(knns[[chr.sel]]))
-      tt = with(ttta, data.frame(number = values,
-                                     start = cumsum(lengths) - lengths + 1,
-                                     end = cumsum(lengths))[order(values),])
+      #calc distribution quantiles , one is interested in dps with exceptional high distance to the next
+      high99 = quantile(m[seqnames(m)==chr.sel]$nndist,na.rm=T,probs =0.995)
+      # mark data points that are in the >99% area
+      cdpsPos = na.omit(which(m[seqnames(m)==chr.sel]$nndist>high99))
+      max_val = tail(which(seqnames(m)==chr.sel),1)
+      cdpsPos = c(cdpsPos,sapply(cdpsPos+1,min,max_val))
+      segms[cdpsPos] = 3
       
-      if(length(outls)>0){
-        i = outls[1]
-        while(i<=length(y$s)){
-          j = which(i>=tt$start & i<=tt$end)
-          print(j)
-          
-          ttta$values[j] = ifelse( ttta$values[j] == 2,3,4)
-          blockend = tt[j,"end"]
-          i = outls[min(which(outls>blockend))]
-          print(i)
-          if(is.na(i)){
-            break;
-          }
-        }
-      }
-    }
-      
-      # if(length(runValue(ttt))>1){
-      #   # first mark PMDs, that are based on low density points
-      #   pmdsIndx= runValue(ttt)==2 #any PMD 
-      #   pmdsStart = cumsum(runLength(ttt))[pmdsIndx]
-      #   pmdProp= lapply(1:length(pmdsStart),function(i){
-      #     range = na.omit(dist[pmdsStart[i]:(pmdsStart[i]+runLength(ttt)[pmdsIndx][i])])
-      #     c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
-      #   })
-      #   df <- data.frame(matrix(unlist(pmdProp), nrow=length(pmdProp), byrow=T))
-      #   colnames(df) = names(pmdProp[[1]])
-      #   lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
-      #   runValue(ttt)[pmdsIndx][df$density<lq]=3 #low PMD point coverage
-      #   
-      #   NpmdsIndx = runValue(ttt) == 1
-      #   NpmdsStart = cumsum(runLength(ttt))[NpmdsIndx]
-      #   NpmdProp= lapply(1:length(NpmdsStart),function(i){
-      #     range = na.omit(dist[NpmdsStart[i]:(NpmdsStart[i]+runLength(ttt)[NpmdsIndx][i])])
-      #     c(length = sum(range),Ndps = length(range),density = length(range)/sum(range))
-      #   })
-      #   df <- data.frame(matrix(unlist(NpmdProp), nrow=length(NpmdProp), byrow=T))
-      #   print(head(df))
-      #   colnames(df) = names(NpmdProp[[1]])
-      #   lq = quantile(df$density,probs=low_density_cutoff,na.rm=TRUE)
-      #   runValue(ttt)[NpmdsIndx][df$density<lq]=4 #low nPMD point coverage
-      #   
-      # }
-      # 
    
-
-    
+      #  mark PMDs, that are based on data points with high next DP distance
+      # #chromosome criticals
+      # cdpsPos= which(m[seqnames(m)==chr.sel]$critical)
+      # 
+      # #selector for rle elements that are pmd
+      # pmdIndx = as.logical(runValue(segms)==2)
+      # #get the end positions of the pmd segments
+      # endpos = cumsum(runLength(segms))
+      # #convert to start points
+      # startPos = c(1,head(endpos+1,-1))#
+      # #filter pmds
+      # pmdsStartPos= startPos[pmdIndx] 
+      # 
+      # 
+      # #find nearest start position of the criticals, to determin their parent segments
+      # 
+      # # this functions finds the indx of the next pos. integer that minimizes the distance
+      # # thereby we get the start positions
+      # nearest = function(num,arr) {
+      #   diffs = num-arr
+      #   diffs = diffs[diffs>0]
+      #   which.min(diffs)
+      # }
+      # # apply for all critical dps, get their parent PMD blocks
+      # criticalPMDsIndx = unlist(lapply(cdpsPos,nearest,pmdsStartPos))
+      # #get all unique pmds
+      # affected_pmds = unique(criticalPMDsIndx)
+      # #get the number of dps inside pmd 
+      # pmdsNdps= (runLength(segms))[pmdIndx][affected_pmds]
+      # #count how many points inside pmd are critical
+      # nCriticalDPsPerPMD = table(criticalPMDsIndx)
+      # #get the propotion of critical dps for each affected pmd
+      # propCritical_nDPs = nCriticalDPsPerPMD/pmdsNdps
+      # 
+      # markPMDs = affected_pmds[which(propCritical_nDPs>.1)] #mark pmds that have more than 10% criticals
+      # runValue(segms)[pmdIndx][affected_pmds] = 3
       
-    # # first take regions that are PMD, but too short and make them nonPMD
-    # min.length = round(quantile(runLength(ttt)[runValue(ttt==2)]))[3]
-    # indx=runLength(ttt)<min.length & runValue(ttt)==2 #any PMD that is shorter 2
-    # pos = cumsum(runLength(ttt))[indx]
-    # remL = sapply(1:length(pos),function(i){
-    #   range = na.omit(dist[pos[i]:(pos[i]+runLength(ttt)[indx][i])])
-    #   density = (length(range)/sum(range))
-    #   
-    #   if (sum(range) < 50000){
-    #     1
-    #   }else{
-    #     
-    #   
-    #     if(density>0.0005){
-    #       0
-    #     } else {
-    #       1
-    #     }
-    #   }
-    # })
-    # runLength(ttt)[indx][remL] = 1 
+    }
+        
     
-    # now vice versa
-    
-    # min.length = round(quantile(runLength(ttt)[runValue(ttt==1)]))[3]
-    # indx=runLength(ttt)<=min.length & runValue(ttt)==1;
-    # pos = cumsum(runLength(ttt))[indx]
-    # 
-    # remL = sapply(1:length(pos),function(i){
-    #   print(i)
-    #   range = na.omit(dist[pos[i]:(pos[i]+runLength(ttt)[indx][i])])
-    #   density = (length(range)/sum(range))
-    #   # print(paste(sum(range),density))
-    #     if(density>0.0005){
-    #       0
-    #     } else {
-    #       1
-    #     }
-    #      
-    #   
-    #   
-    # })
-    # runValue(ttt)[indx2][remL]=2;
-    
-    y$s=inverse.rle(ttta)
+    y$s=segms
     y$score=score
-    print(paste0('finished chromosome:',chr.sel))
+    #print(paste0('finished chromosome:',chr.sel))
     
     return(y)
 

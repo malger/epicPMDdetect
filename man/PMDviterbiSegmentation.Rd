@@ -4,8 +4,7 @@
 \alias{PMDviterbiSegmentation}
 \title{Predicts PMDs/nPMD segments based on HiddenMarkovModel. Selection by ML using viterbi selection.}
 \usage{
-PMDviterbiSegmentation(alphas, hmm.model, markHighDPdistVarSegms = F,
-  knns = NULL)
+PMDviterbiSegmentation(alphas, hmm.model, markLowDensitySegm = T, m.list)
 }
 \arguments{
 \item{alphas}{estimated alpha values for each datapoint. format:list(chr->vector(alphaValues))}
