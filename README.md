@@ -1,6 +1,6 @@
 # epicPMDdetect
 
-Software that extracts PMDs (Partially Methylated Domains) from Illumina (EPIC) Infinium Methylation Assays. Based on MethylseekR, adapted to support EPIC assays, using KNN datapoint selection 
+Software that detects PMDs (Partially Methylated Domains) from Illumina (EPIC) Infinium Methylation Assays. Based on MethylseekR, adapted to support EPIC assays, using KNN datapoint selection 
 and alpha-value smoothing.
 
 ### About PMDs
