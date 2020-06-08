@@ -79,7 +79,7 @@ Specific which samples should be processed (default all) by providing an vector 
 (optional a settings object can be passed that controls further parameters.)
 
 ```R
-segmentPMDsKNN(data,outputFolder,samples=NULL)
+segmentRnbSet(data,outputFolder,samples=NULL)
 
 ```
 
