@@ -14,7 +14,6 @@ Description:
         used, to allow for flexible neighborhood sizes if data points are located too far away.
         Alpha Values are determined for multiple parameters and are then combined 
         to smooth out alpha outliers for individual parameter setups.
-
 Depends: rtracklayer (>= 1.16.3),
          parallel (>= 2.15.1),
          mhsmm (>= 0.4.4),
